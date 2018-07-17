@@ -98,7 +98,6 @@ function(custom_executable target)
     "BZIP2"
     "rclcpp"
     "rosbag_factory"
-    "rosbag"
     ${ros2_message_packages})
   if(ARG_ROS1_DEPENDENCIES)
     ament_target_dependencies(${target}
@@ -114,23 +113,22 @@ function(custom_executable target)
     DESTINATION lib/${PROJECT_NAME})
 endfunction()
 
-add_library(librosbag_factory SHARED
+add_library(rosbag_factory SHARED
   "src/rosbag2/plugins/builtin_interfaces_factories.cpp"
   "src/rosbag2/plugins/convert_builtin_interfaces.cpp"
   ${generated_files})
 
-ament_target_dependencies(librosbag_factory
+ament_target_dependencies(rosbag_factory
   ${prefixed_ros1_message_packages}
   ${ros2_message_packages}
   "rclcpp")
 
 custom_executable(${PROJECT_NAME}_play
-  "src/rosbag2/ros1play.cpp"
+  "src/rosbag2/ros1player.cpp"
   ROS1_DEPENDENCIES
   TARGET_DEPENDENCIES ${ros2_message_packages})
 target_link_libraries(${PROJECT_NAME}_play
-  librosbag_factory
-  rosbag)
+  rosbag_factory)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)

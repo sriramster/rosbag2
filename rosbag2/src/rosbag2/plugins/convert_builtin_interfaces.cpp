@@ -14,7 +14,7 @@
 
 #include "rosbag2/plugins/convert_builtin_interfaces.hpp"
 
-namespace visteon_rosbag
+namespace rosbag2
 {
 
 template<>

@@ -1,4 +1,4 @@
-// generated from visteon_rosbag/resource/get_mappings.cpp.em
+// generated from rosbag2/resource/get_mappings.cpp.em
 
 @###############################################
 @#

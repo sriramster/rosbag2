@@ -1,4 +1,4 @@
-// generated from visteon_rosbag/resource/pkg_factories.cpp.em
+// generated from rosbag2/resource/pkg_factories.cpp.em
 
 @###############################################
 @#
