@@ -9,6 +9,8 @@ int main(int argc, const char ** argv)
   rclcpp::init(argc, argv);
 
   std::string file_name = argv[1];
+  std::cout<<"Opening rosbag file" << file_name<<std::endl;
+
   rosbag2::start_ros1bag_player(file_name);
 
   rclcpp::shutdown();

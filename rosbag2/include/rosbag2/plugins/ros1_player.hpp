@@ -8,6 +8,7 @@
 #include <rosbag/view.h>
 
 #include <rclcpp/rclcpp.hpp>
+#include <rcutils/logging.h>
 
 #include <boost/foreach.hpp>
 
@@ -46,18 +47,6 @@ find(const std::string & topic_name)
   return true;
 }
 
-std::map<std::string, rclcpp::PublisherBase::SharedPtr>::iterator
-find_it(const std::string & topic_name)
-{
-  std::map<std::string, rclcpp::PublisherBase::SharedPtr>::iterator it;
-
-  it = t_pub_map.find(topic_name);
-
-  if (it != t_pub_map.end()) {
-    return it;
-  }
-}
-
 bool
 create_ros2_publishers(const std::string & type_name, const std::string & topic_name, rclcpp::Node::SharedPtr node, size_t queue_sz)
 {
@@ -81,17 +70,16 @@ publish_ros1_msg(const rosbag::MessageInstance & m, const std::string & topic_na
 
   // TODO:[sriram] optimize this below
   if (find(topic_name)) {
-    it = find_it(topic_name);
-  }
-  else {
-    std::cout<<"Iterator not found = "<<type_name<<std::endl;
-    return true;
+    it = t_pub_map.find(topic_name);
+
+    if (it == t_pub_map.end()) {
+      return false;
+    }
   }
 
   auto factory = get_factory(type_name, type_name);
   if (factory != nullptr) {
     factory->publish_ros1_msg(it->second, m);
-    std::cout<<"Published"<<std::endl;
     return true;
   }
   return false;
@@ -115,10 +103,9 @@ start_ros1bag_player(const std::string & file_name)
   View view;
   view.addQuery(*bag);
 
-  rmw_qos_profile_t custom_qos_profile = rmw_qos_profile_default;
-  custom_qos_profile.depth = 7;
-
   auto node_handle_ = std::make_shared<rclcpp::Node>("r2ros1player");
+  auto type_missed = false;
+  std::map<std::string, std::string> type_missed_map;
   
   foreach(const ConnectionInfo* c, view.getConnections())
   {
@@ -128,10 +115,20 @@ start_ros1bag_player(const std::string & file_name)
     std::string callerid_topic = callerid + c->topic;
     std::string type = c->datatype;
     size_t queue_sz = 7;
-    std::cout<<"Type" <<type<<std::endl;
     bool res = create_ros2_publishers(type, callerid_topic, node_handle_, queue_sz);
-    if (!res)
-      std::cout<<"Unable to create publisher from type"<<type<<std::endl;
+    if (!res) {
+      type_missed = true;
+      type_missed_map[callerid_topic] = type;
+    }
+  }
+
+  if (type_missed) {
+    // RCUTILS_LOG_DEBUG("Unable to create publisher for sometypes since support is unavailable please check mapping");
+
+    for (std::map<std::string, std::string>::iterator it = type_missed_map.begin(); it != type_missed_map.end(); it++) {
+      std::cout<<it->first << " "
+               <<it->second << "\n";
+    }
   }
 
   while (true) {
@@ -144,8 +141,10 @@ start_ros1bag_player(const std::string & file_name)
     
       std::string callerid_topic = callerid + topic;
 
-      if (!publish_ros1_msg(m, callerid_topic, m.getDataType()))
-        throw std::runtime_error("Could'nt publish");
+      if (type_missed_map.find(callerid_topic) == type_missed_map.end()) {
+        if (!publish_ros1_msg(m, callerid_topic, m.getDataType()))
+          throw std::runtime_error("Could'nt publish internal error");
+      }
     }
 
     if (!rclcpp::ok()) {
@@ -153,6 +152,7 @@ start_ros1bag_player(const std::string & file_name)
       break;
     }
   }
+  return true;
 }
 
 }

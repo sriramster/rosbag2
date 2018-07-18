@@ -37,7 +37,6 @@ class Factory : public FactoryInterface
   {
     rmw_qos_profile_t custom_qos_profile = rmw_qos_profile_default;
     custom_qos_profile.depth = queue_size;
-    std::cout<<"Creating msgs publishers"<<std::endl;
     return node->create_publisher<ROS2_T>(topic_name, custom_qos_profile);
   }
 
@@ -46,7 +45,6 @@ class Factory : public FactoryInterface
       rclcpp::PublisherBase::SharedPtr pub,
       const rosbag::MessageInstance & m)
   {
-    std::cout<<"Publish msgs"<<std::endl;
     typename rclcpp::Publisher<ROS2_T>::SharedPtr typed_ros2_pub;
     typed_ros2_pub =
         std::dynamic_pointer_cast<typename rclcpp::Publisher<ROS2_T>>(pub);
@@ -56,7 +54,6 @@ class Factory : public FactoryInterface
     auto ros2_msg = std::make_shared<ROS2_T>();
 
     if (ros1_msg != NULL) {
-      std::cout<<"Trying to convert"<<std::endl;
       convert_1_to_2(*ros1_msg, *ros2_msg);
       typed_ros2_pub->publish(ros2_msg);
     }

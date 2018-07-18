@@ -19,6 +19,9 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
+find_package(libyaml_vendor REQUIRED)
+find_package(yaml REQUIRED)
+
 # [sriram] Check if, we need to create local factory.
 find_package(ros1_bridge REQUIRED)
 
@@ -128,7 +131,8 @@ custom_executable(${PROJECT_NAME}_play
   ROS1_DEPENDENCIES
   TARGET_DEPENDENCIES ${ros2_message_packages})
 target_link_libraries(${PROJECT_NAME}_play
-  rosbag_factory)
+  rosbag_factory
+  yaml)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
