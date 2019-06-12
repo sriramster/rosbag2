@@ -28,6 +28,8 @@
 #include "rosbag2/sequential_reader.hpp"
 #include "rosbag2/typesupport_helpers.hpp"
 #include "rosbag2_transport/logging.hpp"
+#include "rosbag2_transport/clock.hpp"
+#include "rosbag2_transport/translate.hpp"
 #include "rosbag2_node.hpp"
 #include "replayable_message.hpp"
 
@@ -76,7 +78,7 @@ void Player::wait_for_filled_queue(const PlayOptions & options) const
 
 void Player::load_storage_content(const PlayOptions & options)
 {
-  TimePoint time_first_message;
+  // TimePoint time_first_message;
 
   ReplayableMessage message;
   if (reader_->has_next()) {
@@ -129,9 +131,11 @@ void Player::play_messages_from_queue()
 void Player::play_messages_until_queue_empty()
 {
   ReplayableMessage message;
+
   while (message_queue_.try_dequeue(message) && rclcpp::ok()) {
     std::this_thread::sleep_until(start_time_ + message.time_since_start);
     if (rclcpp::ok()) {
+      time_publisher_.publishClock(TimePoint(std::chrono::nanoseconds(message.message->time_stamp)));
       publishers_[message.message->topic_name]->publish(message.message->serialized_data);
     }
   }

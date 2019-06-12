@@ -35,6 +35,8 @@ public:
 
   void remove_topic(const rosbag2_storage::TopicMetadata & topic) override;
 
+  void remove_topic(const rosbag2_storage::TopicMetadata & topic) override;
+
   bool has_next() override;
 
   std::shared_ptr<rosbag2_storage::SerializedBagMessage> read_next() override;

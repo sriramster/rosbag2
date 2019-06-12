@@ -26,6 +26,8 @@
 #include "replayable_message.hpp"
 #include "rosbag2/types.hpp"
 #include "rosbag2_transport/play_options.hpp"
+#include "rosbag2_transport/clock.hpp"
+#include "rosbag2_transport/translate.hpp"
 
 using TimePoint = std::chrono::time_point<std::chrono::high_resolution_clock>;
 
@@ -67,6 +69,10 @@ private:
   mutable std::future<void> storage_loading_future_;
   std::shared_ptr<Rosbag2Node> rosbag2_transport_;
   std::unordered_map<std::string, std::shared_ptr<GenericPublisher>> publishers_;
+
+  TimePoint time_first_message;
+  TimeTranslator time_translator_;
+  TimePublisher time_publisher_;
 };
 
 }  // namespace rosbag2_transport
