@@ -16,7 +16,8 @@ using Time = std::chrono::time_point<std::chrono::high_resolution_clock>;
 TimePublisher::TimePublisher()
     :Node("test_clock")
 {
-  time_pub_ = this->create_publisher<rosgraph_msgs::msg::Clock>("clock", rmw_qos_profile_default);
+  rclcpp::QoS qos(rclcpp::KeepLast(10));
+  time_pub_ = this->create_publisher<rosgraph_msgs::msg::Clock>("clock", 10);
   rclcpp::WallRate loop_rate(30.0);
 }
 
