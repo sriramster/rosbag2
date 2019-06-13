@@ -56,8 +56,14 @@ bool Player::is_storage_completely_loaded() const
 
 void Player::play(const PlayOptions & options)
 {
-  prepare_publishers();
+  if (options.topics.size())
+    prepare_publishers(options.topics);
+  else
+    prepare_publishers();
 
+  if (publishers_.size() <= 0)
+    exit(1);
+  
   storage_loading_future_ = std::async(std::launch::async,
       [this, options]() {load_storage_content(options);});
 
@@ -141,12 +147,34 @@ void Player::play_messages_until_queue_empty()
   }
 }
 
+bool Player::find_topics_to_playback(const std::string topic, const std::vector<std::string> requested_topics)
+{
+  if (std::find(requested_topics.begin(), requested_topics.end(), topic) != requested_topics.end())
+  {
+    return true;
+  }
+  return false;
+}
+
 void Player::prepare_publishers()
 {
   auto topics = reader_->get_all_topics_and_types();
+
   for (const auto & topic : topics) {
     publishers_.insert(std::make_pair(
         topic.name, rosbag2_transport_->create_generic_publisher(topic.name, topic.type)));
+  }
+}
+
+void Player::prepare_publishers(const std::vector<std::string> requested_topics)
+{
+  auto topics = reader_->get_all_topics_and_types();
+  for (const auto & topic : topics) {
+    if (find_topics_to_playback(topic.name, requested_topics))
+      publishers_.insert(std::make_pair(
+          topic.name, rosbag2_transport_->create_generic_publisher(topic.name, topic.type)));
+    else
+      std::cout<<"Unable to find topic" << topic.name <<std::endl;
   }
 }
 

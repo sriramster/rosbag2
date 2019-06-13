@@ -26,6 +26,8 @@ class PlayVerb(VerbExtension):
         parser.add_argument(
             'bag_file', help='bag file to replay')
         parser.add_argument(
+            'topics', nargs='*', help='topics to be played back')
+        parser.add_argument(
             '-s', '--storage', default='sqlite3',
             help='storage identifier to be used, defaults to "sqlite3"')
         parser.add_argument(
@@ -39,8 +41,16 @@ class PlayVerb(VerbExtension):
         if not os.path.exists(bag_file):
             return "[ERROR] [ros2bag] bag file '{}' does not exist!".format(bag_file)
 
-        rosbag2_transport_py.play(
-            uri=bag_file,
-            storage_id=args.storage,
-            node_prefix=NODE_NAME_PREFIX,
-            read_ahead_queue_size=args.read_ahead_queue_size)
+        if len(args.topics) > 0:
+            rosbag2_transport_py.play(
+                uri=bag_file,
+                storage_id=args.storage,
+                node_prefix=NODE_NAME_PREFIX,
+                read_ahead_queue_size=args.read_ahead_queue_size,
+                topics=args.topics)
+        else:
+            rosbag2_transport_py.play(
+                uri=bag_file,
+                storage_id=args.storage,
+                node_prefix=NODE_NAME_PREFIX,
+                read_ahead_queue_size=args.read_ahead_queue_size)
