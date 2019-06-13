@@ -102,6 +102,7 @@ rosbag2_transport_play(PyObject * Py_UNUSED(self), PyObject * args, PyObject * k
     "storage_id",
     "node_prefix",
     "read_ahead_queue_size",
+    "topics",
     nullptr
   };
 
@@ -109,11 +110,13 @@ rosbag2_transport_play(PyObject * Py_UNUSED(self), PyObject * args, PyObject * k
   char * storage_id;
   char * node_prefix;
   size_t read_ahead_queue_size;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "sss|k", const_cast<char **>(kwlist),
+  PyObject * topics = nullptr;
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "sss|kO", const_cast<char **>(kwlist),
     &uri,
     &storage_id,
     &node_prefix,
-    &read_ahead_queue_size))
+    &read_ahead_queue_size,
+    &topics))
   {
     return nullptr;
   }
@@ -123,6 +126,19 @@ rosbag2_transport_play(PyObject * Py_UNUSED(self), PyObject * args, PyObject * k
 
   play_options.node_prefix = std::string(node_prefix);
   play_options.read_ahead_queue_size = read_ahead_queue_size;
+
+  if (topics) {
+    PyObject * topic_iterator = PyObject_GetIter(topics);
+    if (topic_iterator != nullptr) {
+      PyObject * topic;
+      while ((topic = PyIter_Next(topic_iterator))) {
+        play_options.topics.emplace_back(PyUnicode_AsUTF8(topic));
+
+        Py_DECREF(topic);
+      }
+      Py_DECREF(topic_iterator);
+    }
+  }
 
   rosbag2_transport::Rosbag2Transport transport;
   transport.init();

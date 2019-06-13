@@ -57,7 +57,8 @@ private:
   void play_messages_from_queue();
   void play_messages_until_queue_empty();
   void prepare_publishers();
-
+  void prepare_publishers(const std::vector<std::string> requested_topics);
+  bool find_topics_to_playback(const std::string topic, const std::vector<std::string> requested_topics);
   static constexpr double read_ahead_lower_bound_percentage_ = 0.9;
   static const std::chrono::milliseconds queue_read_wait_period_;
 

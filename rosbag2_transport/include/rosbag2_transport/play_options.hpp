@@ -25,6 +25,7 @@ struct PlayOptions
 {
 public:
   size_t read_ahead_queue_size;
+  std::vector<std::string> topics;
   std::string node_prefix = "";
 };
 
